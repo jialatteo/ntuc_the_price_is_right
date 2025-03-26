@@ -3,40 +3,66 @@ defmodule BooksToScrape do
   use Crawly.Spider
 
   @impl Crawly.Spider
-  def base_url(), do: "https://books.toscrape.com/"
+  def base_url(), do: "https://www.fairprice.com.sg/category/potato-chips"
 
   @impl Crawly.Spider
   def init() do
-    [start_urls: ["https://books.toscrape.com/"]]
+    [start_urls: ["https://www.fairprice.com.sg/category/potato-chips"]]
   end
 
   @impl Crawly.Spider
   def parse_item(response) do
-    IO.inspect(response, label: "response")
     # Parse response body to document
     {:ok, document} = Floki.parse_document(response.body)
 
-    # Create item (for pages where items exists)
     items =
       document
-      |> Floki.find(".product_pod")
+      |> Floki.find(".product-container")
       |> Enum.map(fn x ->
         %{
-          title: Floki.find(x, "h3 a") |> Floki.attribute("title") |> Floki.text(),
-          price: Floki.find(x, ".product_price .price_color") |> Floki.text(),
-          url: response.request_url
+          title:
+            Floki.find(
+              x,
+              "[data-testid='product-name-and-metadata'] div:nth-of-type(1) span:nth-of-type(2)"
+            )
+            |> Floki.text(),
+          quantity:
+            Floki.find(
+              x,
+              "[data-testid='product-name-and-metadata'] div:nth-of-type(2) span:nth-of-type(1) span:nth-of-type(1)"
+            )
+            |> Floki.text(),
+          price:
+            Floki.find(
+              x,
+              "[data-testid='product'] div:last-of-type div:nth-of-type(1) div:nth-of-type(1) span:nth-of-type(1) span:nth-of-type(1)"
+            )
+            |> Floki.text(),
+          image:
+            Floki.find(
+              x,
+              "[data-testid='recommended-product-image'] img"
+            )
+            |> Floki.attribute("src")
+            |> Floki.text()
+            |> String.split("https://")
+            |> List.last()
+            # Concatenate "https://" with the rest of the URL
+            |> (fn url -> "https://" <> url end).()
         }
       end)
 
-    next_requests =
-      document
-      |> Floki.find(".next a")
-      |> Floki.attribute("href")
-      |> Enum.map(fn url ->
-        Crawly.Utils.build_absolute_url(url, response.request.url)
-        |> Crawly.Utils.request_from_url()
-      end)
+    IO.inspect(items, label: "products", pretty: true)
 
-    %Crawly.ParsedItem{items: items, requests: next_requests}
+    # next_requests =
+    #   document
+    #   |> Floki.find(".next a")
+    #   |> Floki.attribute("href")
+    #   |> Enum.map(fn url ->
+    #     Crawly.Utils.build_absolute_url(url, response.request.url)
+    #     |> Crawly.Utils.request_from_url()
+    #   end)
+
+    %Crawly.ParsedItem{items: items, requests: []}
   end
 end

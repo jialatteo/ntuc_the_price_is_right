@@ -1,8 +1,8 @@
-defmodule NtucScaperTest do
+defmodule NtucScraperTest do
   use ExUnit.Case
-  doctest NtucScaper
+  doctest NtucScraper
 
   test "greets the world" do
-    assert NtucScaper.hello() == :world
+    assert NtucScraper.hello() == :world
   end
 end

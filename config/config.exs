@@ -1,6 +1,7 @@
 import Config
 
 config :crawly,
+  # fetcher: {Crawly.Fetchers.CrawlyRenderServer, [base_url: "http://localhost:3000/render"]},
   closespider_timeout: 10,
   concurrent_requests_per_domain: 8,
   closespider_itemcount: 100,

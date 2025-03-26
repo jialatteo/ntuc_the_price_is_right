@@ -1,6 +1,6 @@
-defmodule NtucScaper do
+defmodule NtucScraper do
   @moduledoc """
-  Documentation for `NtucScaper`.
+  Documentation for `NtucScraper`.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule NtucScaper do
 
   ## Examples
 
-      iex> NtucScaper.hello()
+      iex> NtucScraper.hello()
       :world
 
   """
