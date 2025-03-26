@@ -23,7 +23,8 @@ defmodule NtucScaper.MixProject do
   defp deps do
     [
       {:crawly, "~> 0.17.2"},
-      {:floki, "~> 0.33.0"}
+      {:floki, "~> 0.33.0"},
+      {:hackney, "~> 1.21.0", override: true}
     ]
   end
 end
