@@ -25,13 +25,17 @@ defmodule BooksToScrape do
               x,
               "[data-testid='product-name-and-metadata'] div:nth-of-type(1) span:nth-of-type(2)"
             )
-            |> Floki.text(),
+            |> Floki.text()
+            |> String.split("•")
+            |> List.first(),
           quantity:
             Floki.find(
               x,
-              "[data-testid='product-name-and-metadata'] div:nth-of-type(2) span:nth-of-type(1) span:nth-of-type(1)"
+              "[data-testid='product-name-and-metadata'] div:nth-of-type(2) div:nth-of-type(1) span:nth-of-type(1)"
             )
-            |> Floki.text(),
+            |> Floki.text()
+            |> String.split("•")
+            |> List.first(),
           price:
             Floki.find(
               x,
@@ -63,6 +67,6 @@ defmodule BooksToScrape do
     #     |> Crawly.Utils.request_from_url()
     #   end)
 
-    %Crawly.ParsedItem{items: items, requests: []}
+    %Crawly.ParsedItem{items: items}
   end
 end
