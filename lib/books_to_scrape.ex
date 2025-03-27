@@ -18,6 +18,14 @@ defmodule BooksToScrape do
     items =
       document
       |> Floki.find(".product-container")
+      |> Enum.filter(fn x ->
+        image_url =
+          Floki.find(x, "[data-testid='recommended-product-image'] img")
+          |> Floki.attribute("src")
+          |> List.first()
+
+        image_url && !String.starts_with?(image_url, "data:image/gif;base64,")
+      end)
       |> Enum.map(fn x ->
         %{
           title:
@@ -48,11 +56,7 @@ defmodule BooksToScrape do
               "[data-testid='recommended-product-image'] img"
             )
             |> Floki.attribute("src")
-            |> Floki.text()
-            |> String.split("https://")
-            |> List.last()
-            # Concatenate "https://" with the rest of the URL
-            |> (fn url -> "https://" <> url end).()
+            |> List.first()
         }
       end)
 
