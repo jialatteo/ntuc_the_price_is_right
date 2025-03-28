@@ -2,11 +2,11 @@ defmodule NtucScraper do
   use Crawly.Spider
 
   @impl Crawly.Spider
-  def base_url(), do: "https://www.fairprice.com.sg/category/dairy-chilled-eggs"
+  def base_url(), do: "https://www.fairprice.com.sg/category/baby-child-toys"
 
   @impl Crawly.Spider
   def init() do
-    [start_urls: ["https://www.fairprice.com.sg/category/dairy-chilled-eggs"]]
+    [start_urls: ["https://www.fairprice.com.sg/category/baby-child-toys"]]
   end
 
   @impl Crawly.Spider
