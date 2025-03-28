@@ -14,7 +14,7 @@ config :crawly,
   pipelines: [
     {Crawly.Pipelines.Validate, fields: [:title, :price]},
     {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
+    DownloadImages,
     Crawly.Pipelines.JSONEncoder,
-    Crawly.Pipelines.DownloadImages,
     {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "./tmp"}
   ]

@@ -7,15 +7,19 @@ defmodule DownloadImages do
         {item, state}
 
       image_url ->
-        filename = image_url |> String.split("/") |> List.last()
+        filename =
+          image_url
+          |> String.split("/")
+          |> List.last()
+          |> String.split("?")
+          |> List.first()
+
         save_path = Path.join(["./images", filename])
 
         case download_image(image_url, save_path) do
           :ok ->
-            {item, state}
-
-          # updated_item = Map.put(item, :image_path, save_path)
-          # {updated_item, state}
+            updated_item = Map.put(item, :image, save_path)
+            {updated_item, state}
 
           :error ->
             {item, state}
@@ -24,6 +28,9 @@ defmodule DownloadImages do
   end
 
   defp download_image(url, path) do
+    dir = Path.dirname(path)
+    File.mkdir_p!(dir)
+
     case HTTPoison.get(url) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         File.write(path, body)
