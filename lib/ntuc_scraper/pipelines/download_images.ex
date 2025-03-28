@@ -1,4 +1,4 @@
-defmodule DownloadImages do
+defmodule NtucScraper.Pipelines.DownloadImages do
   @behaviour Crawly.Pipeline
 
   def run(item, state) do

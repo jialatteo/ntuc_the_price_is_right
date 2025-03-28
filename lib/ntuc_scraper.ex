@@ -46,9 +46,12 @@ defmodule NtucScraper do
           price:
             Floki.find(
               x,
-              "[data-testid='product'] div:last-of-type div:nth-of-type(1) div:nth-of-type(1) span:nth-of-type(1) span:nth-of-type(1)"
+              "[data-testid='product'] div:last-of-type div:nth-of-type(1) div:nth-of-type(1) div:nth-of-type(1) span:nth-of-type(1) span:nth-of-type(1)"
             )
-            |> Floki.text(),
+            |> Floki.text()
+            |> String.replace("$", "")
+            |> String.trim()
+            |> String.to_float(),
           image:
             Floki.find(
               x,

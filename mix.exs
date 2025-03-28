@@ -14,7 +14,8 @@ defmodule NtucScraper.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger, :ecto, :ecto_sql],
+      mod: {NtucScraper.Application, []}
     ]
   end
 
@@ -24,7 +25,9 @@ defmodule NtucScraper.MixProject do
     [
       {:crawly, "~> 0.17.2"},
       {:floki, "~> 0.33.0"},
-      {:hackney, "~> 1.21.0", override: true}
+      {:hackney, "~> 1.21.0", override: true},
+      {:ecto_sql, "~> 3.12"},
+      {:ecto_sqlite3, "~> 0.17"}
     ]
   end
 end

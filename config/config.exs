@@ -14,7 +14,12 @@ config :crawly,
   pipelines: [
     {Crawly.Pipelines.Validate, fields: [:title, :price]},
     {Crawly.Pipelines.DuplicatesFilter, item_id: :title},
-    DownloadImages,
-    Crawly.Pipelines.JSONEncoder,
-    {Crawly.Pipelines.WriteToFile, extension: "jl", folder: "./tmp"}
+    NtucScraper.Pipelines.DownloadImages,
+    NtucScraper.Pipelines.DatabaseInsert
   ]
+
+config :ntuc_scraper, ecto_repos: [NtucScraper.Repo]
+
+config :ntuc_scraper, NtucScraper.Repo,
+  database: "priv/database.db",
+  pool_size: 10
