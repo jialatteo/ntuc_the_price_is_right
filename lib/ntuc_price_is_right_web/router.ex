@@ -17,7 +17,8 @@ defmodule NtucPriceIsRightWeb.Router do
   scope "/", NtucPriceIsRightWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    # get "/", PageController, :home
+    live "/chat", HomeLive
   end
 
   # Other scopes may use custom stacks.

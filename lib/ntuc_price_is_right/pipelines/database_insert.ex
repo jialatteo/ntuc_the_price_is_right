@@ -1,6 +1,6 @@
 defmodule NtucPriceIsRight.Pipelines.DatabaseInsert do
   @behaviour Crawly.Pipeline
-  alias NtucPriceIsRight.Product
+  alias NtucPriceIsRight.Products.Product
   alias NtucPriceIsRight.Repo
 
   def run(product, state) do
