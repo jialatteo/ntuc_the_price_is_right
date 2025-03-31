@@ -30,16 +30,17 @@ defmodule NtucPriceIsRightWeb.HomeLive do
 
     <.form for={@price_input} phx-submit="submit" phx-change="validate">
       <.input
-        disabled={@price_input.action == :submit}
         placeholder="Guess the price here (e.g $1.23)"
         phx-hook="PriceInput"
         step="0.01"
         phx-blur="format_price"
         field={@price_input[:price]}
-      /> <button disabled={@price_input.action == :submit}>submit</button>
+      /> <button>submit</button>
     </.form>
 
     <p>Result: {if @is_correct_guess, do: "✅", else: "❌"}</p>
+
+    <p>Score: {@number_of_correct} / 10</p>
     """
   end
 
@@ -48,19 +49,23 @@ defmodule NtucPriceIsRightWeb.HomeLive do
 
     changeset =
       %PriceInput{}
-      |> PriceInput.changeset(%{"price" => formatted_price})
-      |> Map.put(:action, :submit)
+      |> PriceInput.changeset(%{"price" => ""})
 
     input_price = String.to_float(formatted_price)
     actual_price = socket.assigns.product.price
     is_correct_guess = 0.9 * actual_price <= input_price and input_price <= 1.1 * actual_price
 
-    IO.inspect(socket.assigns.price_input, label: "socket.assigns.price_input")
+    number_of_correct =
+      if is_correct_guess,
+        do: socket.assigns.number_of_correct + 1,
+        else: socket.assigns.number_of_correct
 
     {:noreply,
      socket
      |> assign(:price_input, to_form(changeset))
-     |> assign(:is_correct_guess, is_correct_guess)}
+     |> assign(:is_correct_guess, is_correct_guess)
+     |> assign(:number_of_correct, number_of_correct)
+     |> assign(:product, Products.get_random_product())}
   end
 
   def handle_event("validate", %{"price_input" => price}, socket) do
