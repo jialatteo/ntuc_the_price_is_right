@@ -1,4 +1,4 @@
-defmodule NtucPriceIsRight.PriceInput do
+defmodule NtucPriceIsRight.GuessedPrice do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -6,8 +6,8 @@ defmodule NtucPriceIsRight.PriceInput do
     field :price, :decimal
   end
 
-  def changeset(price_input, params) do
-    price_input
+  def changeset(guessed_price, params) do
+    guessed_price
     |> cast(params, [:price])
     |> validate_required([:price])
   end

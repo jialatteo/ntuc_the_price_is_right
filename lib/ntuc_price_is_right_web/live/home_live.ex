@@ -1,18 +1,18 @@
 defmodule NtucPriceIsRightWeb.HomeLive do
   use NtucPriceIsRightWeb, :live_view
   alias NtucPriceIsRight.Products
-  alias NtucPriceIsRight.PriceInput
+  alias NtucPriceIsRight.GuessedPrice
 
   def mount(_params, _session, socket) do
     product = if connected?(socket), do: Products.get_random_product(), else: nil
-    price_input = to_form(PriceInput.changeset(%PriceInput{}, %{}))
+    guessed_price_form = to_form(GuessedPrice.changeset(%GuessedPrice{}, %{}))
 
     {:ok,
      socket
-     |> assign(:is_correct_guess, false)
      |> assign(:number_of_correct, 0)
      |> assign(:product, product)
-     |> assign(:price_input, price_input)}
+     |> assign(:submissions, [])
+     |> assign(:guessed_price_form, guessed_price_form)}
   end
 
   def render(assigns) do
@@ -31,7 +31,7 @@ defmodule NtucPriceIsRightWeb.HomeLive do
       </div>
     </div>
 
-    <.form class="relative" for={@price_input} phx-submit="submit" phx-change="validate">
+    <.form class="relative" for={@guessed_price_form} phx-submit="submit" phx-change="validate">
       <div class="flex mt-[9px] items-center font-semibold justify-center absolute left-0 top-0 h-[44px] sm:h-[42px] rounded-l-lg w-8 text-xl border-r">
         $
       </div>
@@ -42,10 +42,10 @@ defmodule NtucPriceIsRightWeb.HomeLive do
           class="flex-1"
           phx-debounce="300"
           input_class="pl-9 text-xl w-full"
-          phx-hook="PriceInput"
+          phx-hook="GuessedPrice"
           step="0.01"
           phx-blur="format_price"
-          field={@price_input[:price]}
+          field={@guessed_price_form[:price]}
         />
         <button title="Submit" class="mt-[14px] ml-1">
           <svg
@@ -64,21 +64,19 @@ defmodule NtucPriceIsRightWeb.HomeLive do
       </div>
     </.form>
 
-    <p>Result: {if @is_correct_guess, do: "✅", else: "❌"}</p>
-
     <p>Score: {@number_of_correct} / 10</p>
     """
   end
 
-  def handle_event("submit", %{"price_input" => %{"price" => price}}, socket) do
-    changeset = PriceInput.changeset(%PriceInput{}, %{"price" => price})
+  def handle_event("submit", %{"guessed_price" => %{"price" => price}}, socket) do
+    changeset = GuessedPrice.changeset(%GuessedPrice{}, %{"price" => price})
 
     if changeset.valid? do
-      formatted_price = format_price_input(price)
-
-      input_price = String.to_float(formatted_price)
+      guessed_price = price |> format_guessed_price() |> String.to_float()
       actual_price = socket.assigns.product.price
-      is_correct_guess = 0.9 * actual_price <= input_price and input_price <= 1.1 * actual_price
+
+      is_correct_guess =
+        0.9 * actual_price <= guessed_price and guessed_price <= 1.1 * actual_price
 
       number_of_correct =
         if is_correct_guess,
@@ -87,36 +85,39 @@ defmodule NtucPriceIsRightWeb.HomeLive do
 
       {:noreply,
        socket
-       |> assign(:price_input, to_form(PriceInput.changeset(%PriceInput{}, %{})))
+       |> assign(:guessed_price_form, to_form(GuessedPrice.changeset(%GuessedPrice{}, %{})))
        |> assign(:is_correct_guess, is_correct_guess)
        |> assign(:number_of_correct, number_of_correct)
        |> assign(:product, Products.get_random_product())}
     else
-      {:noreply, assign(socket, :price_input, to_form(changeset |> Map.put(:action, :submit)))}
+      {:noreply,
+       assign(socket, :guessed_price_form, to_form(changeset |> Map.put(:action, :submit)))}
     end
   end
 
-  def handle_event("validate", %{"price_input" => price}, socket) do
+  def handle_event("validate", %{"guessed_price" => price}, socket) do
     changeset =
-      %PriceInput{}
-      |> PriceInput.changeset(price)
+      %GuessedPrice{}
+      |> GuessedPrice.changeset(price)
       |> Map.put(:action, :validate)
 
-    {:noreply, socket |> assign(:price_input, to_form(changeset))}
+    {:noreply, socket |> assign(:guessed_price_form, to_form(changeset))}
   end
 
   def handle_event("format_price", %{"value" => price}, socket) do
-    formatted_price = format_price_input(price)
+    formatted_price = format_guessed_price(price)
+
+    IO.inspect(formatted_price, label: "formatted_price")
 
     changeset =
-      %PriceInput{}
-      |> PriceInput.changeset(%{"price" => formatted_price})
+      %GuessedPrice{}
+      |> GuessedPrice.changeset(%{"price" => formatted_price})
       |> Map.put(:action, :validate)
 
-    {:noreply, socket |> assign(:price_input, to_form(changeset))}
+    {:noreply, socket |> assign(:guessed_price_form, to_form(changeset))}
   end
 
-  defp format_price_input(price) do
+  defp format_guessed_price(price) do
     price
     |> String.trim()
     |> String.replace(~r/[^0-9\.]/, "")
@@ -135,4 +136,15 @@ defmodule NtucPriceIsRightWeb.HomeLive do
         ""
     end
   end
+end
+
+defmodule NtucPriceIsRightWeb.Submission do
+  defstruct [:product_name, :actual_price, :guessed_price, :is_correct]
+
+  @type submission :: %__MODULE__{
+          product_name: String.t(),
+          actual_price: float(),
+          guessed_price: float(),
+          is_correct: boolean()
+        }
 end

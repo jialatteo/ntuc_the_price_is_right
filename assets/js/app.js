@@ -16,7 +16,7 @@
 //
 
 let Hooks = {};
-Hooks.PriceInput = {
+Hooks.GuessedPrice = {
   mounted() {
     this.el.addEventListener("input", (event) => {
       let value = event.target.value;
