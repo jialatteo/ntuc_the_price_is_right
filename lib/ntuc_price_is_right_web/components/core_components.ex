@@ -291,6 +291,9 @@ defmodule NtucPriceIsRightWeb.CoreComponents do
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
                 multiple pattern placeholder readonly required rows size step)
 
+  attr :input_class, :string, default: ""
+  attr :class, :string, default: ""
+
   def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
 
@@ -367,9 +370,10 @@ defmodule NtucPriceIsRightWeb.CoreComponents do
   end
 
   # All other inputs text, datetime-local, url, password, etc. are handled here...
-  def input(assigns) do
+
+  def(input(assigns)) do
     ~H"""
-    <div>
+    <div class={@class}>
       <.label for={@id}>{@label}</.label>
       <input
         type={@type}
@@ -378,6 +382,7 @@ defmodule NtucPriceIsRightWeb.CoreComponents do
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
           "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
+          @input_class,
           @errors == [] && "border-zinc-300 focus:border-zinc-400",
           @errors != [] && "border-rose-400 focus:border-rose-400"
         ]}
