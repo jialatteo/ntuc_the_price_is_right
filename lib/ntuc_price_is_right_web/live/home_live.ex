@@ -3,6 +3,20 @@ defmodule NtucPriceIsRightWeb.HomeLive do
   alias NtucPriceIsRight.Products
   alias NtucPriceIsRight.GuessedPrice
 
+  defmodule Submission do
+    defstruct [:id, :product_name, :image, :actual_price, :guessed_price, :quantity, :is_correct]
+
+    @type t :: %__MODULE__{
+            id: String.t(),
+            product_name: String.t(),
+            image: String.t(),
+            quantity: String.t(),
+            actual_price: float(),
+            guessed_price: float(),
+            is_correct: boolean()
+          }
+  end
+
   def mount(_params, _session, socket) do
     product = if connected?(socket), do: Products.get_random_product(), else: nil
     guessed_price_form = to_form(GuessedPrice.changeset(%GuessedPrice{}, %{}))
@@ -11,7 +25,7 @@ defmodule NtucPriceIsRightWeb.HomeLive do
      socket
      |> assign(:number_of_correct, 0)
      |> assign(:product, product)
-     |> assign(:submissions, [])
+     |> stream(:submissions, [])
      |> assign(:guessed_price_form, guessed_price_form)}
   end
 
@@ -65,6 +79,25 @@ defmodule NtucPriceIsRightWeb.HomeLive do
     </.form>
 
     <p>Score: {@number_of_correct} / 10</p>
+
+    <div id="submissions" phx-update="stream">
+      <div
+        :for={{dom_id, submission} <- @streams.submissions}
+        class={[
+          submission.is_correct && "bg-green-300",
+          !submission.is_correct && "bg-red-300"
+        ]}
+        class="flex"
+        id={dom_id}
+      >
+        <img src={submission.image} alt={submission.product_name} />
+        <p>{submission.product_name} ({submission.quantity})</p>
+        
+        <p>{submission.actual_price}</p>
+        
+        <p>{submission.guessed_price}</p>
+      </div>
+    </div>
     """
   end
 
@@ -83,8 +116,19 @@ defmodule NtucPriceIsRightWeb.HomeLive do
           do: socket.assigns.number_of_correct + 1,
           else: socket.assigns.number_of_correct
 
+      submission = %Submission{
+        id: Ecto.UUID.generate(),
+        image: socket.assigns.product.image,
+        product_name: socket.assigns.product.title,
+        quantity: socket.assigns.product.quantity,
+        actual_price: actual_price,
+        guessed_price: guessed_price,
+        is_correct: is_correct_guess
+      }
+
       {:noreply,
        socket
+       |> stream_insert(:submissions, submission, at: 0)
        |> assign(:guessed_price_form, to_form(GuessedPrice.changeset(%GuessedPrice{}, %{})))
        |> assign(:is_correct_guess, is_correct_guess)
        |> assign(:number_of_correct, number_of_correct)
@@ -136,15 +180,4 @@ defmodule NtucPriceIsRightWeb.HomeLive do
         ""
     end
   end
-end
-
-defmodule NtucPriceIsRightWeb.Submission do
-  defstruct [:product_name, :actual_price, :guessed_price, :is_correct]
-
-  @type submission :: %__MODULE__{
-          product_name: String.t(),
-          actual_price: float(),
-          guessed_price: float(),
-          is_correct: boolean()
-        }
 end
