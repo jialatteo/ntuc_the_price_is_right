@@ -17,8 +17,11 @@ defmodule NtucPriceIsRightWeb.HomeLive do
 
   def render(assigns) do
     ~H"""
-    <div :if={@product} class="flex p-2 flex-col items-center border">
-      <img src={@product.image} alt={@product.title} />
+    <div :if={@product} class="border p-4">
+      <div class="flex flex-col items-center">
+        <img src={@product.image} alt={@product.title} />
+      </div>
+      
       <div class="flex flex-col gap-2">
         <p class="font-bold text-3xl">${:erlang.float_to_binary(@product.price, decimals: 2)}</p>
         
@@ -29,14 +32,15 @@ defmodule NtucPriceIsRightWeb.HomeLive do
     </div>
 
     <.form class="relative" for={@price_input} phx-submit="submit" phx-change="validate">
-      <div class="flex mt-2 items-center font-semibold justify-center absolute left-0 top-0 h-[46px] sm:h-[42px] rounded-l-lg w-8 text-xl text-white bg-green-600">
+      <div class="flex mt-[9px] items-center font-semibold justify-center absolute left-0 top-0 h-[44px] sm:h-[42px] rounded-l-lg w-8 text-xl border-r">
         $
       </div>
       
       <div class="flex w-full items-start">
         <.input
-          placeholder="Guess the price here (e.g $1.23)"
+          placeholder="Guess the price (e.g $1.23)"
           class="flex-1"
+          phx-debounce="300"
           input_class="pl-9 text-xl w-full"
           phx-hook="PriceInput"
           step="0.01"
