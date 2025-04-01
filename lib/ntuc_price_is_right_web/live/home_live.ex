@@ -33,7 +33,7 @@ defmodule NtucPriceIsRightWeb.HomeLive do
     ~H"""
     <div :if={@product} class="border p-4">
       <div class="flex flex-col items-center">
-        <img src={@product.image} alt={@product.title} />
+        <img class="size-80" src={@product.image} alt={@product.title} />
       </div>
       
       <div class="flex flex-col gap-2">
@@ -78,26 +78,46 @@ defmodule NtucPriceIsRightWeb.HomeLive do
       </div>
     </.form>
 
-    <p>Score: {@number_of_correct} / 10</p>
+    <p>Past Submissions</p>
 
-    <div id="submissions" phx-update="stream">
-      <div
-        :for={{dom_id, submission} <- @streams.submissions}
-        class={[
-          submission.is_correct && "bg-green-300",
-          !submission.is_correct && "bg-red-300"
-        ]}
-        class="flex"
-        id={dom_id}
-      >
-        <img src={submission.image} alt={submission.product_name} />
-        <p>{submission.product_name} ({submission.quantity})</p>
-        
-        <p>{submission.actual_price}</p>
-        
-        <p>{submission.guessed_price}</p>
-      </div>
+    <%!--
+    <div class="flex justify-between">
+      <p>Product</p>
+
+      <p>Actual Price</p>
+
+      <p>Guessed Price</p>
+
+      <p>Status</p>
     </div>
+
+    <div id="submissionss" phx-update="stream">
+      <div :for={{dom_id, room} <- @streams.submissions} class="flex">
+
+      </div>
+    </div> --%>
+    <.table table_class="mt-0" id="submissions" rows={@streams.submissions}>
+      <:col :let={{dom_id, submission}} label="Product">
+        <div class="flex max-w-40 sm:max-w-full sm:flex-row flex-col items-center text-sm">
+          <img class="size-12" src={submission.image} alt="submission.product_name" />
+          <p class="ml-1 font-light">
+            {submission.product_name} ({submission.quantity})
+          </p>
+        </div>
+      </:col>
+      
+      <:col :let={{dom_id, submission}} label="Actual Price">
+        <p class="text-xl font-semibold">
+          ${submission.actual_price}
+        </p>
+      </:col>
+      
+      <:col :let={{dom_id, submission}} label="Guessed Price">
+        <p class="text-xl font-semibold">
+          ${submission.guessed_price} {if submission.is_correct, do: "✅", else: "❌"}
+        </p>
+      </:col>
+    </.table>
     """
   end
 
@@ -121,8 +141,8 @@ defmodule NtucPriceIsRightWeb.HomeLive do
         image: socket.assigns.product.image,
         product_name: socket.assigns.product.title,
         quantity: socket.assigns.product.quantity,
-        actual_price: actual_price,
-        guessed_price: guessed_price,
+        actual_price: :erlang.float_to_binary(actual_price, decimals: 2),
+        guessed_price: format_guessed_price(price),
         is_correct: is_correct_guess
       }
 
