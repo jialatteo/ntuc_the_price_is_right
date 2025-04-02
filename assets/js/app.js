@@ -28,6 +28,29 @@ Hooks.GuessedPrice = {
   },
 };
 
+Hooks.ScoreAnimation = {
+  mounted() {
+    this.handleEvent("animate_score", () => {
+      let elem = document.getElementById("score-flash");
+
+      // Remove opacity and reset position
+      elem.classList.remove("opacity-0");
+
+      // Force a reflow to restart animation
+      void elem.offsetWidth;
+
+      // Apply animation (float up) duration-500 tailwind
+      elem.classList.add("opacity-100", "-translate-y-6");
+
+      // Make it disappear
+      setTimeout(() => {
+        elem.classList.remove("opacity-100", "-translate-y-6");
+        elem.classList.add("opacity-0");
+      }, 500);
+    });
+  },
+};
+
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
 import "phoenix_html";
 // Establish Phoenix Socket and LiveView configuration.

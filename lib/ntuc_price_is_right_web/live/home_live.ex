@@ -66,6 +66,7 @@ defmodule NtucPriceIsRightWeb.HomeLive do
           phx-hook="GuessedPrice"
           step="0.01"
           phx-blur="format_price"
+          autocomplete="off"
           field={@guessed_price_form[:price]}
         />
         <button
@@ -82,6 +83,14 @@ defmodule NtucPriceIsRightWeb.HomeLive do
       
       <div class="flex justify-center text-2xl font-bold ">
         <div class="relative ">
+          <div
+            id="score-flash"
+            class="absolute right-0 sm:right-7 bottom-4 text-green-500 font-bold text-3xl opacity-0 transition-all duration-500"
+            phx-hook="ScoreAnimation"
+          >
+            +{min(@correct_streak, 5)}
+          </div>
+          
           <div class="absolute flex items-center gap-2 sm:gap-8 right-3 sm:right-10 -top-2">
             <span class="rounded bg-[#204E80] p-2 text-white">You</span> {@score}
           </div>
@@ -159,6 +168,11 @@ defmodule NtucPriceIsRightWeb.HomeLive do
         actual_price: :erlang.float_to_binary(actual_price, decimals: 2),
         guessed_price: format_guessed_price(price)
       }
+
+      socket =
+        if is_correct_guess,
+          do: push_event(socket, "animate_score", %{}),
+          else: socket
 
       {:noreply,
        socket
