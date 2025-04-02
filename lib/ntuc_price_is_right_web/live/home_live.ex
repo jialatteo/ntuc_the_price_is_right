@@ -38,7 +38,7 @@ defmodule NtucPriceIsRightWeb.HomeLive do
 
   def render(assigns) do
     ~H"""
-    <div :if={@product} class="border p-4">
+    <div :if={@product} class="border rounded-lg p-4">
       <div class="flex flex-col items-center">
         <img class="size-80" src={@product.image} alt={@product.title} />
       </div>
@@ -85,41 +85,57 @@ defmodule NtucPriceIsRightWeb.HomeLive do
       </div>
     </.form>
 
-    <p>Score {@score}</p>
-
-    <p class="font-bold text-2xl mt-8 mb-3">Previous Submissions</p>
-
-    <.table table_class="w-full" id="submissions" rows={@streams.submissions}>
-      <:col :let={{dom_id, submission}} label="Product">
-        <div class="flex sm:flex-row flex-col sm:items-center text-sm">
-          <img class="size-12" src={submission.image} alt="submission.product_name" />
-          <span class="sm:ml-1">
-            {submission.product_name} ({submission.quantity})
-          </span>
+    <div class="border rounded-lg mt-6 mb-6 p-2 pb-6">
+      <p class="text-2xl font-bold mb-2">Score</p>
+      
+      <div class="flex justify-center text-2xl font-bold ">
+        <div class="relative ">
+          <div class="absolute flex items-center gap-2 sm:gap-8 right-3 sm:right-10 -top-2">
+            <span class="rounded bg-[#204E80] p-2 text-white">You</span> {@score}
+          </div>
+           <span>-</span>
+          <div class="absolute flex items-center gap-2 sm:gap-8 left-3 sm:left-10 -top-2">
+            123 <span class="rounded bg-[#E53B2C] p-2 text-white">Opponent</span>
+          </div>
         </div>
-      </:col>
+      </div>
+    </div>
+
+    <div class="border rounded-lg p-2">
+      <p class="text-2xl font-bold mb-4">Previous guesses</p>
       
-      <:col :let={{dom_id, submission}} label="Actual Price">
-        <p class="text-xl font-semibold">
-          ${submission.actual_price}
-        </p>
-      </:col>
-      
-      <:col :let={{dom_id, submission}} label="Guessed Price">
-        <p class="text-xl font-semibold">
-          ${submission.guessed_price}
-        </p>
-      </:col>
-      
-      <:col :let={{dom_id, submission}} label="Points">
-        <p class={[
-          "text-2xl font-bold",
-          if(@correct_streak > 0, do: "text-green-500", else: "text-gray-400")
-        ]}>
-          +{min(@correct_streak, 5)}
-        </p>
-      </:col>
-    </.table>
+      <.table table_class="w-full" id="submissions" rows={@streams.submissions}>
+        <:col :let={{dom_id, submission}} label="Product">
+          <div class="flex sm:flex-row flex-col sm:items-center text-sm">
+            <img class="size-12" src={submission.image} alt="submission.product_name" />
+            <span class="sm:ml-1">
+              {submission.product_name} ({submission.quantity})
+            </span>
+          </div>
+        </:col>
+        
+        <:col :let={{dom_id, submission}} label="Actual Price">
+          <p class="text-xl font-semibold">
+            ${submission.actual_price}
+          </p>
+        </:col>
+        
+        <:col :let={{dom_id, submission}} label="Guessed Price">
+          <p class="text-xl font-semibold">
+            ${submission.guessed_price}
+          </p>
+        </:col>
+        
+        <:col :let={{dom_id, submission}} label="Points">
+          <p class={[
+            "text-2xl font-bold",
+            if(@correct_streak > 0, do: "text-green-500", else: "text-gray-400")
+          ]}>
+            +{min(@correct_streak, 5)}
+          </p>
+        </:col>
+      </.table>
+    </div>
     """
   end
 

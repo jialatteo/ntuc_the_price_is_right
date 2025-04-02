@@ -480,7 +480,7 @@ defmodule NtucPriceIsRightWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
+    <div class="px-4 sm:overflow-visible sm:px-0">
       <table class={[@table_class, "w-[40rem] sm:w-full"]}>
         <thead class="text-sm text-left leading-6 text-zinc-500">
           <tr>
