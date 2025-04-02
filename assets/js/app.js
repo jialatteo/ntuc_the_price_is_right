@@ -51,6 +51,39 @@ Hooks.ScoreAnimation = {
   },
 };
 
+Hooks.CountdownTimer = {
+  mounted() {
+    const totalTime = 30;
+    let countdownValue = totalTime;
+
+    const countdownElement = this.el.querySelector("span");
+    const progressBar = this.el.querySelector("#progress-bar");
+
+    // Display countdown in the DOM
+    const displayCountdown = () => {
+      countdownElement.innerHTML = countdownValue;
+      // Update progress bar width
+      const progress = (countdownValue / totalTime) * 100; // Calculate progress as percentage
+      progressBar.style.width = `${progress}%`;
+    };
+
+    // Update the countdown every second
+    const updateCountdown = () => {
+      if (countdownValue > 0) {
+        countdownValue -= 1;
+        displayCountdown(); // Update the countdown in the DOM and progress bar
+        setTimeout(updateCountdown, 1000); // Repeat every second
+      } else {
+        // Once the countdown finishes, push an event to LiveView (if necessary)
+        this.pushEvent("countdown_completed", {});
+      }
+    };
+
+    // Start the countdown
+    updateCountdown();
+  },
+};
+
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
 import "phoenix_html";
 // Establish Phoenix Socket and LiveView configuration.

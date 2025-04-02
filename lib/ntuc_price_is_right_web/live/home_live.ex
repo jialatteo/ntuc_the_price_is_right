@@ -27,17 +27,53 @@ defmodule NtucPriceIsRightWeb.HomeLive do
     product = if connected?(socket), do: Products.get_random_product(), else: nil
     guessed_price_form = to_form(GuessedPrice.changeset(%GuessedPrice{}, %{}))
 
+    # if connected?(socket) do
+    #   Process.send_after(self(), :tick, 1000)
+    # end
+
     {:ok,
      socket
      |> assign(:score, 0)
      |> assign(:correct_streak, 0)
      |> assign(:product, product)
      |> stream(:submissions, [])
+     #  |> assign(:countdown, 30)
      |> assign(:guessed_price_form, guessed_price_form)}
   end
 
   def render(assigns) do
     ~H"""
+    <div
+      phx-update="ignore"
+      id="countdown"
+      phx-hook="CountdownTimer"
+      class="w-full bg-gray-300 rounded-lg text-center h-10 my-4 relative overflow-hidden"
+    >
+      <span class="absolute inset-0 flex items-center justify-center text-white font-bold">
+        <!-- Countdown text will be updated here -->
+      </span>
+      <div
+        id="progress-bar"
+        class="bg-blue-500 h-10"
+        style="width: 100%; transition: width 1s linear;"
+      >
+      </div>
+    </div>
+
+    <%!-- <div
+      class="w-full bg-gray-300 rounded-lg text-center h-10 my-4 relative overflow-hidden"
+    >
+      <span class="absolute inset-0 flex items-center justify-center text-white font-bold">
+        {@countdown}
+      </span>
+
+      <div
+        id="progress-bar"
+        class="bg-blue-500 h-10"
+        style={"width: #{@countdown / 30 * 100}%; transition: width 1s linear;"}
+      >
+      </div>
+    </div> --%>
     <div :if={@product} class="border rounded-lg p-4">
       <div class="flex flex-col items-center">
         <img class="size-80" src={@product.image} alt={@product.title} />
@@ -208,6 +244,10 @@ defmodule NtucPriceIsRightWeb.HomeLive do
       |> Map.put(:action, :validate)
 
     {:noreply, socket |> assign(:guessed_price_form, to_form(changeset))}
+  end
+
+  def handle_event("countdown_completed", _params, socket) do
+    {:noreply, push_navigate(socket, to: "/page")}
   end
 
   defp format_guessed_price(price) do
