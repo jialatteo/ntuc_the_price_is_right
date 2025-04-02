@@ -62,31 +62,23 @@ defmodule NtucPriceIsRightWeb.HomeLive do
           placeholder="Guess the price (e.g $1.23)"
           class="flex-1"
           phx-debounce="300"
-          input_class="pl-9 text-xl w-full"
+          input_class="pl-9 text-xl w-full rounded-r-none"
           phx-hook="GuessedPrice"
           step="0.01"
           phx-blur="format_price"
           field={@guessed_price_form[:price]}
         />
-        <button title="Submit" class="mt-[14px] ml-1">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            class="size-8 hover:fill-gray-500"
-            viewBox="2.25 2.25 19.5 19.5"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm4.28 10.28a.75.75 0 0 0 0-1.06l-3-3a.75.75 0 1 0-1.06 1.06l1.72 1.72H8.25a.75.75 0 0 0 0 1.5h5.69l-1.72 1.72a.75.75 0 1 0 1.06 1.06l3-3Z"
-              clip-rule="evenodd"
-            />
-          </svg>
+        <button
+          title="Submit"
+          class="mt-[8px] font-semibold rounded-r-lg py-[11px] text-white hover hover:bg-gray-400 bg-black px-1 sm:py-[9px]"
+        >
+          <p>Guess</p>
         </button>
       </div>
     </.form>
 
     <div class="border rounded-lg mt-6 mb-6 p-2 pb-6">
-      <p class="text-2xl font-bold mb-2">Score</p>
+      <p class="text-2xl font-bold mb-4">Score</p>
       
       <div class="flex justify-center text-2xl font-bold ">
         <div class="relative ">
@@ -95,7 +87,10 @@ defmodule NtucPriceIsRightWeb.HomeLive do
           </div>
            <span>-</span>
           <div class="absolute flex items-center gap-2 sm:gap-8 left-3 sm:left-10 -top-2">
-            123 <span class="rounded bg-[#E53B2C] p-2 text-white">Opponent</span>
+            123 <span class="rounded bg-[#E53B2C] p-2 text-white min-[440px]:hidden">Opp.</span>
+            <span class="rounded bg-[#E53B2C] p-2 text-white hidden min-[440px]:inline">
+              Opponent
+            </span>
           </div>
         </div>
       </div>
