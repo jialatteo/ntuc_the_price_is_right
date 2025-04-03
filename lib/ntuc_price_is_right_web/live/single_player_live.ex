@@ -1,4 +1,4 @@
-defmodule NtucPriceIsRightWeb.HomeLive do
+defmodule NtucPriceIsRightWeb.SinglePlayerLive do
   use NtucPriceIsRightWeb, :live_view
   alias NtucPriceIsRight.Products
   alias NtucPriceIsRight.GuessedPrice
@@ -29,7 +29,6 @@ defmodule NtucPriceIsRightWeb.HomeLive do
 
     {:ok,
      socket
-     |> assign(:opponent_score, 123)
      |> assign(:score, 0)
      |> assign(:is_game_in_progress, true)
      |> assign(:correct_streak, 0)
@@ -110,56 +109,19 @@ defmodule NtucPriceIsRightWeb.HomeLive do
         <div class="relative ">
           <div
             id="score-flash"
-            class="absolute right-0 sm:right-7 bottom-4 text-green-500 font-bold text-3xl opacity-0 transition-all duration-500"
+            class="absolute bottom-4 text-green-500 font-bold text-3xl opacity-0 transition-all duration-500"
             phx-hook="ScoreAnimation"
           >
             +{min(@correct_streak, 5)}
           </div>
           
-          <div class={[
-            "absolute flex items-center gap-2 sm:gap-8 right-3 sm:right-10 -top-2",
-            !@is_game_in_progress && @opponent_score > @score && "opacity-20",
-            !@is_game_in_progress && @opponent_score == @score && "opacity-80"
-          ]}>
-            <span class="rounded bg-[#204E80] p-2 text-white">You</span> {@score}
-          </div>
-           <span>-</span>
-          <div class={[
-            "absolute flex items-center gap-2 sm:gap-8 left-3 sm:left-10 -top-2",
-            !@is_game_in_progress && @score > @opponent_score && "opacity-20",
-            !@is_game_in_progress && @opponent_score == @score && "opacity-80"
-          ]}>
-            {@opponent_score}
-            <span class="rounded bg-[#E53B2C] p-2 text-white min-[440px]:hidden">Opp.</span>
-            <span class="rounded bg-[#E53B2C] p-2 text-white hidden min-[440px]:inline">
-              Opponent
-            </span>
-          </div>
+          <p class="text-3xl">{@score}</p>
         </div>
       </div>
       
-      <div
-        :if={!@is_game_in_progress && @score > @opponent_score}
-        class="flex text-2xl flex-col items-center font-bold mt-10"
-      >
-        <p class="mb-2">You Win!</p>
+      <div :if={!@is_game_in_progress} class="flex text-2xl flex-col items-center font-bold mt-10">
+        <p>Great job!</p>
          <img src="/images/smiling_emoji.png" class="size-28" alt="Win Image" />
-      </div>
-      
-      <div
-        :if={!@is_game_in_progress && @opponent_score == @score}
-        class="flex flex-col text-2xl items-center font-bold mt-10"
-      >
-        <p class="mb-2">Draw</p>
-         <img src="/images/shrugging_emoji.png" class="size-28" alt="Draw Image" />
-      </div>
-      
-      <div
-        :if={!@is_game_in_progress && @opponent_score > @score}
-        class="flex flex-col text-2xl items-center font-bold mt-10"
-      >
-        <p class="mb-2">You Lose!</p>
-         <img src="/images/crying_emoji.png" class="size-28" alt="Lose Image" />
       </div>
     </div>
 
