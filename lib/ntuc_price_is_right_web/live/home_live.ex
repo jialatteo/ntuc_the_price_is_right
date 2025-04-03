@@ -27,23 +27,21 @@ defmodule NtucPriceIsRightWeb.HomeLive do
     product = if connected?(socket), do: Products.get_random_product(), else: nil
     guessed_price_form = to_form(GuessedPrice.changeset(%GuessedPrice{}, %{}))
 
-    # if connected?(socket) do
-    #   Process.send_after(self(), :tick, 1000)
-    # end
-
     {:ok,
      socket
+     |> assign(:opponent_score, 123)
      |> assign(:score, 0)
+     |> assign(:is_game_in_progress, true)
      |> assign(:correct_streak, 0)
      |> assign(:product, product)
      |> stream(:submissions, [])
-     #  |> assign(:countdown, 30)
      |> assign(:guessed_price_form, guessed_price_form)}
   end
 
   def render(assigns) do
     ~H"""
     <div
+      :if={@is_game_in_progress}
       phx-update="ignore"
       id="countdown"
       phx-hook="CountdownTimer"
@@ -56,25 +54,10 @@ defmodule NtucPriceIsRightWeb.HomeLive do
         id="progress-bar"
         class="bg-blue-500 h-10"
         style="width: 100%; transition: width 1s linear;"
-      >
-      </div>
+      />
     </div>
 
-    <%!-- <div
-      class="w-full bg-gray-300 rounded-lg text-center h-10 my-4 relative overflow-hidden"
-    >
-      <span class="absolute inset-0 flex items-center justify-center text-white font-bold">
-        {@countdown}
-      </span>
-
-      <div
-        id="progress-bar"
-        class="bg-blue-500 h-10"
-        style={"width: #{@countdown / 30 * 100}%; transition: width 1s linear;"}
-      >
-      </div>
-    </div> --%>
-    <div :if={@product} class="border rounded-lg p-4">
+    <div :if={@product && @is_game_in_progress} class="border rounded-lg p-4">
       <div class="flex flex-col items-center">
         <img class="size-80" src={@product.image} alt={@product.title} />
       </div>
@@ -88,7 +71,13 @@ defmodule NtucPriceIsRightWeb.HomeLive do
       </div>
     </div>
 
-    <.form class="relative" for={@guessed_price_form} phx-submit="submit" phx-change="validate">
+    <.form
+      :if={@is_game_in_progress}
+      class="relative"
+      for={@guessed_price_form}
+      phx-submit="submit"
+      phx-change="validate"
+    >
       <div class="flex mt-[9px] items-center font-semibold justify-center absolute left-0 top-0 h-[44px] sm:h-[42px] rounded-l-lg w-8 text-xl border-r">
         $
       </div>
@@ -127,17 +116,50 @@ defmodule NtucPriceIsRightWeb.HomeLive do
             +{min(@correct_streak, 5)}
           </div>
           
-          <div class="absolute flex items-center gap-2 sm:gap-8 right-3 sm:right-10 -top-2">
+          <div class={[
+            "absolute flex items-center gap-2 sm:gap-8 right-3 sm:right-10 -top-2",
+            !@is_game_in_progress && @opponent_score > @score && "opacity-20",
+            !@is_game_in_progress && @opponent_score == @score && "opacity-80"
+          ]}>
             <span class="rounded bg-[#204E80] p-2 text-white">You</span> {@score}
           </div>
            <span>-</span>
-          <div class="absolute flex items-center gap-2 sm:gap-8 left-3 sm:left-10 -top-2">
-            123 <span class="rounded bg-[#E53B2C] p-2 text-white min-[440px]:hidden">Opp.</span>
+          <div class={[
+            "absolute flex items-center gap-2 sm:gap-8 left-3 sm:left-10 -top-2",
+            !@is_game_in_progress && @score > @opponent_score && "opacity-20",
+            !@is_game_in_progress && @opponent_score == @score && "opacity-80"
+          ]}>
+            {@opponent_score}
+            <span class="rounded bg-[#E53B2C] p-2 text-white min-[440px]:hidden">Opp.</span>
             <span class="rounded bg-[#E53B2C] p-2 text-white hidden min-[440px]:inline">
               Opponent
             </span>
           </div>
         </div>
+      </div>
+      
+      <div
+        :if={!@is_game_in_progress && @score > @opponent_score}
+        class="flex text-2xl flex-col items-center font-bold mt-10"
+      >
+        <p class="mb-2">You Win!</p>
+         <img src="/images/smiling_emoji.png" class="size-28" alt="Win Image" />
+      </div>
+      
+      <div
+        :if={!@is_game_in_progress && @opponent_score == @score}
+        class="flex flex-col text-2xl items-center font-bold mt-10"
+      >
+        <p class="mb-2">Draw</p>
+         <img src="/images/shrugging_emoji.png" class="size-28" alt="Draw Image" />
+      </div>
+      
+      <div
+        :if={!@is_game_in_progress && @opponent_score > @score}
+        class="flex flex-col text-2xl items-center font-bold mt-10"
+      >
+        <p class="mb-2">You Lose!</p>
+         <img src="/images/crying_emoji.png" class="size-28" alt="Lose Image" />
       </div>
     </div>
 
@@ -236,8 +258,6 @@ defmodule NtucPriceIsRightWeb.HomeLive do
   def handle_event("format_price", %{"value" => price}, socket) do
     formatted_price = format_guessed_price(price)
 
-    IO.inspect(formatted_price, label: "formatted_price")
-
     changeset =
       %GuessedPrice{}
       |> GuessedPrice.changeset(%{"price" => formatted_price})
@@ -247,7 +267,7 @@ defmodule NtucPriceIsRightWeb.HomeLive do
   end
 
   def handle_event("countdown_completed", _params, socket) do
-    {:noreply, push_navigate(socket, to: "/page")}
+    {:noreply, assign(socket, :is_game_in_progress, false)}
   end
 
   defp format_guessed_price(price) do
