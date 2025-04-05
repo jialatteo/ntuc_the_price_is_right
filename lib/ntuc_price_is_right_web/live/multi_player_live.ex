@@ -47,10 +47,10 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
 
   def render(assigns) do
     ~H"""
-    <div :if={!@game_id} class="rounded-lg border flex-col flex gap-2 justify-center items-center p-4">
-      <p>Searching for players...</p>
+    <div :if={!@game_id} class="rounded-lg border flex-col flex gap-8 justify-center items-center p-8">
+      <p class="text-4xl">Searching for players...</p>
       
-      <svg class="animate-spin size-6" xmlns="http://www.w3.org/2000/svg">
+      <svg class="animate-spin size-20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path
           d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
           opacity=".25"

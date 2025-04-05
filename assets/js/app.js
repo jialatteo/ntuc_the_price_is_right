@@ -54,25 +54,20 @@ Hooks.ScoreAnimation = {
 Hooks.CountdownTimer = {
   mounted() {
     const totalTime = 30;
-    let countdownValue = totalTime;
-
     const countdownElement = this.el.querySelector("span");
     const progressBar = this.el.querySelector("#progress-bar");
-
-    // Display countdown in the DOM
-    const displayCountdown = () => {
-      countdownElement.innerHTML = countdownValue;
-      // Update progress bar width
-      const progress = (countdownValue / totalTime) * 100; // Calculate progress as percentage
-      progressBar.style.width = `${progress}%`;
-    };
+    const endTime = Date.now() + totalTime * 1000;
 
     // Update the countdown every second
     const updateCountdown = () => {
+      const remainingMs = endTime - Date.now();
+      const countdownValue = Math.max(0, Math.ceil(remainingMs / 1000));
+
+      countdownElement.innerHTML = countdownValue;
+      const progress = (countdownValue / totalTime) * 100;
+      progressBar.style.width = `${progress}%`;
       if (countdownValue > 0) {
-        countdownValue -= 1;
-        displayCountdown(); // Update the countdown in the DOM and progress bar
-        setTimeout(updateCountdown, 1000); // Repeat every second
+        setTimeout(updateCountdown, 1000);
       } else {
         // Once the countdown finishes, push an event to LiveView (if necessary)
         this.pushEvent("countdown_completed", {});
