@@ -35,7 +35,13 @@ defmodule NtucPriceIsRight.Matchmaker do
     players = [pid1, pid2]
 
     Enum.each(players, fn pid ->
-      send(pid, {:matched, %{game_id: game_id}})
+      opponent_pid =
+        case pid do
+          ^pid1 -> pid2
+          ^pid2 -> pid1
+        end
+
+      send(pid, {:matched, %{game_id: game_id, opponent_pid: opponent_pid}})
     end)
 
     new_state = %{

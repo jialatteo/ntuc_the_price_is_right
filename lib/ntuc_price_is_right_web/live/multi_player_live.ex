@@ -35,8 +35,8 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
 
     {:ok,
      socket
-     |> assign(:game_id, nil)
-     |> assign(:opponent_score, 123)
+     |> assign(:opponent_pid, nil)
+     |> assign(:opponent_score, 0)
      |> assign(:score, 0)
      |> assign(:is_game_in_progress, true)
      |> assign(:correct_streak, 0)
@@ -47,7 +47,10 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
 
   def render(assigns) do
     ~H"""
-    <div :if={!@game_id} class="rounded-lg border flex-col flex gap-8 justify-center items-center p-8">
+    <div
+      :if={!@opponent_pid}
+      class="rounded-lg border flex-col flex gap-8 justify-center items-center p-8"
+    >
       <p class="text-4xl">Searching for players...</p>
       
       <svg class="animate-spin size-20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -58,7 +61,7 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
       </svg>
     </div>
 
-    <div :if={@game_id}>
+    <div :if={@opponent_pid}>
       <div
         :if={@is_game_in_progress}
         phx-update="ignore"
@@ -186,7 +189,7 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
         <p class="text-2xl font-bold mb-4">Previous guesses</p>
         
         <.table table_class="w-full" id="submissions" rows={@streams.submissions}>
-          <:col :let={{dom_id, submission}} label="Product">
+          <:col :let={{_dom_id, submission}} label="Product">
             <div class="flex sm:flex-row flex-col sm:items-center text-sm">
               <img class="size-12" src={submission.image} alt="submission.product_name" />
               <span class="sm:ml-1">
@@ -195,19 +198,19 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
             </div>
           </:col>
           
-          <:col :let={{dom_id, submission}} label="Actual Price">
+          <:col :let={{_dom_id, submission}} label="Actual Price">
             <p class="text-xl font-semibold">
               ${submission.actual_price}
             </p>
           </:col>
           
-          <:col :let={{dom_id, submission}} label="Guessed Price">
+          <:col :let={{_dom_id, submission}} label="Guessed Price">
             <p class="text-xl font-semibold">
               ${submission.guessed_price}
             </p>
           </:col>
           
-          <:col :let={{dom_id, submission}} label="Points">
+          <:col :let={{_dom_id, submission}} label="Points">
             <p class={[
               "text-2xl font-bold",
               if(@correct_streak > 0, do: "text-green-500", else: "text-gray-400")
@@ -253,6 +256,12 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
           do: push_event(socket, "animate_score", %{}),
           else: socket
 
+      Phoenix.PubSub.broadcast(
+        NtucPriceIsRight.PubSub,
+        socket.assigns.opponent_pid |> :erlang.pid_to_list() |> to_string(),
+        {:opp_score_change, score}
+      )
+
       {:noreply,
        socket
        |> stream_insert(:submissions, submission, at: 0)
@@ -289,12 +298,24 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
 
   def handle_event("countdown_completed", _params, socket) do
     # Matchmaker.end_game(game_id)
-    {:noreply, assign(socket, :is_game_in_progress, false)}
+    {:noreply,
+     socket
+     |> assign(:is_game_in_progress, false)}
   end
 
-  def handle_info({:matched, %{game_id: game_id}}, socket) do
-    IO.inspect(self(), label: "matched to game_id #{game_id}")
-    {:noreply, assign(socket, :game_id, game_id)}
+  def handle_info({:matched, %{opponent_pid: opponent_pid}}, socket) do
+    # IO.inspect(self(), label: "matched to game_id #{game_id}")
+    Phoenix.PubSub.subscribe(
+      NtucPriceIsRight.PubSub,
+      self() |> :erlang.pid_to_list() |> to_string()
+    )
+
+    {:noreply, assign(socket, :opponent_pid, opponent_pid)}
+  end
+
+  def handle_info({:opp_score_change, opp_score}, socket) do
+    IO.inspect(opp_score, label: "opp_score")
+    {:noreply, assign(socket, :opponent_score, opp_score)}
   end
 
   def terminate(_reason, socket) do
