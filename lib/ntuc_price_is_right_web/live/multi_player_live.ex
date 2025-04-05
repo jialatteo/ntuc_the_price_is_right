@@ -36,6 +36,7 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
     {:ok,
      socket
      |> assign(:opponent_pid, nil)
+     |> assign(:game_id, nil)
      |> assign(:opponent_score, 0)
      |> assign(:score, 0)
      |> assign(:is_game_in_progress, true)
@@ -125,7 +126,7 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
         </div>
       </.form>
       
-      <div class="border rounded-lg mt-6 mb-6 p-2 pb-6">
+      <div class="border rounded-lg mt-6 mb-6 p-4 pb-8">
         <p class="text-2xl font-bold mb-4">Score</p>
         
         <div class="flex justify-center text-2xl font-bold ">
@@ -139,23 +140,35 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
             </div>
             
             <div class={[
-              "absolute flex items-center gap-2 sm:gap-8 right-3 sm:right-10 -top-2",
+              "absolute flex items-center gap-2 sm:gap-8 right-3 sm:right-10 -top-[18px]",
               !@is_game_in_progress && @opponent_score > @score && "opacity-20",
               !@is_game_in_progress && @opponent_score == @score && "opacity-80"
             ]}>
-              <span class="rounded bg-[#204E80] p-2 text-white">You</span> {@score}
+              <div class="rounded flex flex-col items-center gap-1 bg-[#204E80] p-2 text-white">
+                <p>You</p>
+                
+                <p class="text-sm">{format_pid_as_string(self())}</p>
+              </div>
+               {@score}
             </div>
              <span>-</span>
             <div class={[
-              "absolute flex items-center gap-2 sm:gap-8 left-3 sm:left-10 -top-2",
+              "absolute flex items-center gap-2 sm:gap-8 left-3 sm:left-10 -top-[18px]",
               !@is_game_in_progress && @score > @opponent_score && "opacity-20",
               !@is_game_in_progress && @opponent_score == @score && "opacity-80"
             ]}>
               {@opponent_score}
-              <span class="rounded bg-[#E53B2C] p-2 text-white min-[440px]:hidden">Opp.</span>
-              <span class="rounded bg-[#E53B2C] p-2 text-white hidden min-[440px]:inline">
-                Opponent
-              </span>
+              <div class="rounded flex flex-col items-center gap-1 bg-[#E53B2C] p-2 text-white min-[440px]:hidden">
+                <p>Opp.</p>
+                
+                <p class="text-sm">{format_pid_as_string(@opponent_pid)}</p>
+              </div>
+              
+              <div class="rounded flex-col items-center gap-1 bg-[#E53B2C] p-2 text-white hidden min-[440px]:flex">
+                <p>Opposition</p>
+                
+                <p class="text-sm">{format_pid_as_string(@opponent_pid)}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -185,7 +198,7 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
         </div>
       </div>
       
-      <div class="border rounded-lg p-2">
+      <div class="border rounded-lg p-4">
         <p class="text-2xl font-bold mb-4">Previous guesses</p>
         
         <.table table_class="w-full" id="submissions" rows={@streams.submissions}>
@@ -297,20 +310,23 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
   end
 
   def handle_event("countdown_completed", _params, socket) do
-    # Matchmaker.end_game(game_id)
+    Matchmaker.end_game(socket.assigns.game_id)
+
     {:noreply,
      socket
      |> assign(:is_game_in_progress, false)}
   end
 
-  def handle_info({:matched, %{opponent_pid: opponent_pid}}, socket) do
-    # IO.inspect(self(), label: "matched to game_id #{game_id}")
+  def handle_info({:matched, %{game_id: game_id, opponent_pid: opponent_pid}}, socket) do
     Phoenix.PubSub.subscribe(
       NtucPriceIsRight.PubSub,
       self() |> :erlang.pid_to_list() |> to_string()
     )
 
-    {:noreply, assign(socket, :opponent_pid, opponent_pid)}
+    {:noreply,
+     socket
+     |> assign(:opponent_pid, opponent_pid)
+     |> assign(:game_id, game_id)}
   end
 
   def handle_info({:opp_score_change, opp_score}, socket) do
@@ -341,5 +357,11 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
       _ ->
         ""
     end
+  end
+
+  defp format_pid_as_string(pid) when is_pid(pid) do
+    res = :erlang.pid_to_list(pid) |> to_string()
+    IO.inspect(res, label: "res")
+    res
   end
 end

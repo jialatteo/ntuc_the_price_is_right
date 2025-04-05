@@ -102,7 +102,7 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
       </div>
     </.form>
 
-    <div class="border rounded-lg mt-6 mb-6 p-2 pb-6">
+    <div class="border rounded-lg mt-6 mb-6 p-4 pb-6">
       <p class="text-2xl font-bold mb-4">Score</p>
       
       <div class="flex justify-center text-2xl font-bold ">
@@ -125,7 +125,7 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
       </div>
     </div>
 
-    <div class="border rounded-lg p-2">
+    <div class="border rounded-lg p-4">
       <p class="text-2xl font-bold mb-4">Previous guesses</p>
       
       <.table table_class="w-full" id="submissions" rows={@streams.submissions}>
