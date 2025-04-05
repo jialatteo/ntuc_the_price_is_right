@@ -10,14 +10,16 @@ defmodule NtucPriceIsRight.Application do
     children = [
       NtucPriceIsRightWeb.Telemetry,
       NtucPriceIsRight.Repo,
-      {DNSCluster, query: Application.get_env(:ntuc_price_is_right, :dns_cluster_query) || :ignore},
+      {DNSCluster,
+       query: Application.get_env(:ntuc_price_is_right, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: NtucPriceIsRight.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: NtucPriceIsRight.Finch},
       # Start a worker by calling: NtucPriceIsRight.Worker.start_link(arg)
       # {NtucPriceIsRight.Worker, arg},
       # Start to serve requests, typically the last entry
-      NtucPriceIsRightWeb.Endpoint
+      NtucPriceIsRightWeb.Endpoint,
+      NtucPriceIsRight.Matchmaker
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

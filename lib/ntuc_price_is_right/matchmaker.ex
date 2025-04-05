@@ -1,4 +1,4 @@
-defmodule Matchmaker do
+defmodule NtucPriceIsRight.Matchmaker do
   use GenServer
   alias Phoenix.PubSub
   @pubsub NtucPriceIsRight.PubSub
@@ -25,10 +25,12 @@ defmodule Matchmaker do
   end
 
   def handle_call({:join_queue, pid}, _from, %{waiting: nil} = state) do
+    IO.inspect(state, label: "state before empty join_queue")
     {:reply, :waiting, %{state | waiting: pid}}
   end
 
   def handle_call({:join_queue, pid2}, _from, %{waiting: pid1} = state) do
+    IO.inspect(state, label: "state before existing player join_queue")
     game_id = UUID.uuid4()
     players = [pid1, pid2]
 
@@ -46,6 +48,8 @@ defmodule Matchmaker do
   end
 
   def handle_cast({:leave_queue, pid}, state) do
+    IO.inspect(state, label: "state before leave_queue")
+
     case state.waiting do
       ^pid -> {:noreply, %{state | waiting: nil}}
       _ -> {:noreply, state}
@@ -53,6 +57,7 @@ defmodule Matchmaker do
   end
 
   def handle_cast({:end_game, game_id}, state) do
+    IO.inspect(state, label: "state before end_game")
     games = Enum.reject(state.active_games, fn g -> g.game_id == game_id end)
     {:noreply, %{state | active_games: games}}
   end
