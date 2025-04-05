@@ -39,6 +39,18 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
 
   def render(assigns) do
     ~H"""
+    <div class="flex text-xl justify-between mb-4">
+      <.back navigate={~p"/"}>Back to home</.back>
+      
+      <.link
+        :if={!@is_game_in_progress}
+        navigate={~p"/single-player"}
+        class="text-xl font-semibold leading-6 text-zinc-900 hover:text-zinc-400"
+      >
+        Play again <.icon name="hero-arrow-path-solid" class="size-5" />
+      </.link>
+    </div>
+
     <div
       :if={@is_game_in_progress}
       phx-update="ignore"
@@ -129,7 +141,7 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
       <p class="text-2xl font-bold mb-4">Previous guesses</p>
       
       <.table table_class="w-full" id="submissions" rows={@streams.submissions}>
-        <:col :let={{dom_id, submission}} label="Product">
+        <:col :let={{_dom_id, submission}} label="Product">
           <div class="flex sm:flex-row flex-col sm:items-center text-sm">
             <img class="size-12" src={submission.image} alt="submission.product_name" />
             <span class="sm:ml-1">
@@ -138,19 +150,19 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
           </div>
         </:col>
         
-        <:col :let={{dom_id, submission}} label="Actual Price">
+        <:col :let={{_dom_id, submission}} label="Actual Price">
           <p class="text-xl font-semibold">
             ${submission.actual_price}
           </p>
         </:col>
         
-        <:col :let={{dom_id, submission}} label="Guessed Price">
+        <:col :let={{_dom_id, submission}} label="Guessed Price">
           <p class="text-xl font-semibold">
             ${submission.guessed_price}
           </p>
         </:col>
         
-        <:col :let={{dom_id, submission}} label="Points">
+        <:col :let={{_dom_id, submission}} label="Points">
           <p class={[
             "text-2xl font-bold",
             if(@correct_streak > 0, do: "text-green-500", else: "text-gray-400")

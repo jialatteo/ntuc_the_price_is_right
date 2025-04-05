@@ -561,16 +561,17 @@ defmodule NtucPriceIsRightWeb.CoreComponents do
       <.back navigate={~p"/posts"}>Back to posts</.back>
   """
   attr :navigate, :any, required: true
+  attr :class, :string, default: ""
   slot :inner_block, required: true
 
   def back(assigns) do
     ~H"""
-    <div class="mt-16">
+    <div>
       <.link
         navigate={@navigate}
-        class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
+        class={["font-semibold text-xl leading-6 text-zinc-900 hover:text-zinc-400", @class]}
       >
-        <.icon name="hero-arrow-left-solid" class="h-3 w-3" />
+        <.icon name="hero-arrow-left-solid" class="size-5" />
         {render_slot(@inner_block)}
       </.link>
     </div>

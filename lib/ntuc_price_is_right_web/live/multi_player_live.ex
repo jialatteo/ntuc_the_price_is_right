@@ -48,6 +48,18 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
 
   def render(assigns) do
     ~H"""
+    <div class="text-xl flex justify-between mb-4">
+      <.back navigate={~p"/"}>Back to home</.back>
+      
+      <.link
+        :if={!@is_game_in_progress}
+        navigate={~p"/multi-player"}
+        class="font-semibold leading-6 text-zinc-900 hover:text-zinc-400"
+      >
+        Play again <.icon name="hero-arrow-path-solid" class="size-5" />
+      </.link>
+    </div>
+
     <div
       :if={!@opponent_pid}
       class="rounded-lg border flex-col flex gap-8 justify-center items-center p-8"
@@ -233,7 +245,6 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
           </:col>
         </.table>
       </div>
-       <a href="/single-player">single player</a>
     </div>
     """
   end
