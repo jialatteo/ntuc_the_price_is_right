@@ -341,7 +341,6 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
   end
 
   def handle_info({:opp_score_change, opp_score}, socket) do
-    IO.inspect(opp_score, label: "opp_score")
     {:noreply, assign(socket, :opponent_score, opp_score)}
   end
 
@@ -371,8 +370,6 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
   end
 
   defp format_pid_as_string(pid) when is_pid(pid) do
-    res = :erlang.pid_to_list(pid) |> to_string()
-    IO.inspect(res, label: "res")
-    res
+    :erlang.pid_to_list(pid) |> to_string()
   end
 end

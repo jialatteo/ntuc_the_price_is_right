@@ -53,7 +53,7 @@ Hooks.ScoreAnimation = {
 
 Hooks.CountdownTimer = {
   mounted() {
-    const totalTime = 10;
+    const totalTime = 3;
     const countdownElement = this.el.querySelector("span");
     const progressBar = this.el.querySelector("#progress-bar");
     const endTime = Date.now() + totalTime * 1000;

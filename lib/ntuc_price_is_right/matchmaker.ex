@@ -25,12 +25,14 @@ defmodule NtucPriceIsRight.Matchmaker do
   end
 
   def handle_call({:join_queue, pid}, _from, %{waiting: nil} = state) do
-    IO.inspect(state, label: "state before empty join_queue")
+    IO.inspect(%{state | waiting: pid},
+      label: "games state after a single player waits and queues"
+    )
+
     {:reply, :waiting, %{state | waiting: pid}}
   end
 
   def handle_call({:join_queue, pid2}, _from, %{waiting: pid1} = state) do
-    IO.inspect(state, label: "state before existing player join_queue")
     game_id = UUID.uuid4()
     players = [pid1, pid2]
 
@@ -50,12 +52,12 @@ defmodule NtucPriceIsRight.Matchmaker do
         active_games: [%{game_id: game_id, players: players} | state.active_games]
     }
 
+    IO.inspect(new_state, label: "games state after a pair matches and game just started")
+
     {:reply, {:matched, game_id}, new_state}
   end
 
   def handle_cast({:leave_queue, pid}, state) do
-    IO.inspect(state, label: "state before leave_queue")
-
     case state.waiting do
       ^pid -> {:noreply, %{state | waiting: nil}}
       _ -> {:noreply, state}
@@ -63,8 +65,8 @@ defmodule NtucPriceIsRight.Matchmaker do
   end
 
   def handle_cast({:end_game, game_id}, state) do
-    IO.inspect(state, label: "state before end_game")
     games = Enum.reject(state.active_games, fn g -> g.game_id == game_id end)
+    IO.inspect(games, label: "games state after a game ended")
     {:noreply, %{state | active_games: games}}
   end
 end
