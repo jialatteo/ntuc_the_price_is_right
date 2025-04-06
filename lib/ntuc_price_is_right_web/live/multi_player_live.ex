@@ -3,6 +3,8 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
   alias NtucPriceIsRight.Products
   alias NtucPriceIsRight.GuessedPrice
   alias NtucPriceIsRight.Matchmaker
+  alias NtucPriceIsRight.TopScores
+  alias NtucPriceIsRight.TopScores.TopScore
 
   defmodule Submission do
     defstruct [
@@ -27,6 +29,7 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
   def mount(_params, _session, socket) do
     # product = if connected?(socket), do: Products.get_random_product(), else: nil
     guessed_price_form = to_form(GuessedPrice.changeset(%GuessedPrice{}, %{}))
+    top_score_form = to_form(TopScore.changeset(%TopScore{}, %{}))
 
     if connected?(socket) do
       Process.monitor(self())
@@ -40,10 +43,12 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
      |> assign(:opponent_score, 0)
      |> assign(:score, 0)
      |> assign(:is_game_in_progress, true)
+     |> assign(:is_in_leaderboard, false)
      |> assign(:correct_streak, 0)
      |> assign(:products, nil)
      |> assign(:current_product_index, 0)
      |> stream(:submissions, [])
+     |> assign(:top_score_form, top_score_form)
      |> assign(:guessed_price_form, guessed_price_form)}
   end
 
@@ -203,28 +208,42 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
           </div>
         </div>
         
-        <div
-          :if={!@is_game_in_progress && @score > @opponent_score}
-          class="flex text-2xl flex-col items-center font-bold mt-10"
-        >
-          <p class="mb-2">You Win!</p>
-           <img src="/images/smiling_emoji.png" class="size-28" alt="Win Image" />
-        </div>
-        
-        <div
-          :if={!@is_game_in_progress && @opponent_score == @score}
-          class="flex flex-col text-2xl items-center font-bold mt-10"
-        >
-          <p class="mb-2">Draw</p>
-           <img src="/images/shrugging_emoji.png" class="size-28" alt="Draw Image" />
-        </div>
-        
-        <div
-          :if={!@is_game_in_progress && @opponent_score > @score}
-          class="flex flex-col text-2xl items-center font-bold mt-10"
-        >
-          <p class="mb-2">You Lose!</p>
-           <img src="/images/crying_emoji.png" class="size-28" alt="Lose Image" />
+        <div :if={!@is_game_in_progress} class="flex text-2xl flex-col items-center font-bold mt-10">
+          <div :if={@is_in_leaderboard} class="mt-8">
+            <p class="font-bold mb-5">You made the top 10!</p>
+            
+            <p class="font-semibold mb-2 text-center">Enter your name</p>
+            
+            <.form phx-submit="update_top_score_user" for={@top_score_form}>
+              <.input
+                input_class="disabled:bg-gray-200 font-semibold disabled:opacity-50"
+                disabled={@top_score_form.source.action == :submitted}
+                autocomplete="off"
+                field={@top_score_form[:user]}
+              />
+              <button
+                disabled={@top_score_form.source.action == :submitted}
+                class="text-white disabled:opacity-50 disabled:bg-gray-300 hover:bg-gray-400 mt-4 mb-8 rounded-lg py-2 bg-black w-full"
+              >
+                Submit
+              </button>
+            </.form>
+          </div>
+          
+          <div :if={@score > @opponent_score}>
+            <p class="mb-2">You Win!</p>
+             <img src="/images/smiling_emoji.png" class="size-28" alt="Win Image" />
+          </div>
+          
+          <div :if={@score == @opponent_score}>
+            <p class="mb-2">Draw</p>
+             <img src="/images/shrugging_emoji.png" class="size-28" alt="Draw Image" />
+          </div>
+          
+          <div :if={@score < @opponent_score}>
+            <p class="mb-2">You Lose!</p>
+             <img src="/images/crying_emoji.png" class="size-28" alt="Lose Image" />
+          </div>
         </div>
       </div>
       
@@ -349,9 +368,49 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
   def handle_event("countdown_completed", _params, socket) do
     Matchmaker.end_game(socket.assigns.game_id)
 
-    {:noreply,
-     socket
-     |> assign(:is_game_in_progress, false)}
+    if TopScores.qualifies_for_top_score?(socket.assigns.score) do
+      TopScores.insert_top_score!(%{
+        "user" => "user" <> format_pid_as_string(self()),
+        "score" => socket.assigns.score
+      })
+
+      {:noreply,
+       socket
+       |> assign(:is_in_leaderboard, true)
+       |> assign(:is_game_in_progress, false)}
+    else
+      {:noreply,
+       socket
+       |> assign(:is_game_in_progress, false)}
+    end
+  end
+
+  def handle_event("update_top_score_user", %{"top_score" => %{"user" => user}}, socket) do
+    current_score = socket.assigns.score
+    changeset = TopScore.changeset(%TopScore{score: current_score}, %{"user" => user})
+    IO.inspect(changeset, label: "changeset before rename")
+
+    if changeset.valid? do
+      case TopScores.rename_user("user" <> format_pid_as_string(self()), user) do
+        {:error, :not_found} ->
+          IO.puts("Top score not found")
+          {:noreply, socket}
+
+        {:ok, _top_score} ->
+          top_score_form =
+            changeset
+            |> Map.put(:action, :submitted)
+            |> to_form()
+
+          {:noreply,
+           socket
+           |> assign(:is_game_in_progress, false)
+           |> assign(:top_score_form, top_score_form)}
+      end
+    else
+      {:noreply,
+       socket |> assign(:top_score_form, to_form(changeset |> Map.put(:action, :validate)))}
+    end
   end
 
   def handle_info(

@@ -315,7 +315,7 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
     changeset = TopScore.changeset(%TopScore{score: current_score}, %{"user" => user})
 
     if changeset.valid? do
-      case TopScores.rename_user(format_pid_as_string(self()), user) do
+      case TopScores.rename_user("user" <> format_pid_as_string(self()), user) do
         {:error, :not_found} ->
           IO.puts("Top score not found")
           {:noreply, socket}
