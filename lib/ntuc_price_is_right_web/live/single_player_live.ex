@@ -93,10 +93,9 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
       </div>
       
       <div class="flex flex-col gap-2">
-        <p class="font-bold text-3xl">
+        <%!-- <p class="font-bold text-3xl">
           ${:erlang.float_to_binary(Enum.at(@products, @current_product_index).price, decimals: 2)}
-        </p>
-        
+        </p> --%>
         <p class="text-2xl">{Enum.at(@products, @current_product_index).title}</p>
         
         <p class="text-xl font-medium text-gray-500">
@@ -176,7 +175,7 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
           </.form>
         </div>
         
-        <p :if={!@is_in_leaderboard}>Great job!</p>
+        <p :if={!@is_in_leaderboard} class="text-center">Great job!</p>
          <img src="/images/smiling_emoji.png" class="size-28" alt="Win Image" />
       </div>
     </div>

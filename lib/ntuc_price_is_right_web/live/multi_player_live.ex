@@ -117,10 +117,9 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
         </div>
         
         <div class="flex flex-col gap-2">
-          <p class="font-bold text-3xl">
+          <%!-- <p class="font-bold text-3xl">
             ${:erlang.float_to_binary(Enum.at(@products, @current_product_index).price, decimals: 2)}
-          </p>
-          
+          </p> --%>
           <p class="text-2xl">{Enum.at(@products, @current_product_index).title}</p>
           
           <p class="text-xl font-medium text-gray-500">
@@ -231,17 +230,17 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
           </div>
           
           <div :if={@score > @opponent_score}>
-            <p class="mb-2">You Win!</p>
+            <p class="mb-2 text-center">You Win!</p>
              <img src="/images/smiling_emoji.png" class="size-28" alt="Win Image" />
           </div>
           
           <div :if={@score == @opponent_score}>
-            <p class="mb-2">Draw</p>
+            <p class="mb-2 text-center">Draw</p>
              <img src="/images/shrugging_emoji.png" class="size-28" alt="Draw Image" />
           </div>
           
           <div :if={@score < @opponent_score}>
-            <p class="mb-2">You Lose!</p>
+            <p class="mb-2 text-center">You Lose!</p>
              <img src="/images/crying_emoji.png" class="size-28" alt="Lose Image" />
           </div>
         </div>
