@@ -12,7 +12,9 @@ defmodule NtucPriceIsRightWeb.LeaderboardLive do
 
   def render(assigns) do
     ~H"""
-    <h1 class="font-bold text-3xl mb-8 ml-4 sm:ml-0">Leaderboard</h1>
+    <.back navigate={~p"/"}>Back to home</.back>
+
+    <h1 class="font-bold text-3xl my-8 ml-4 sm:ml-0">Leaderboard</h1>
 
     <.table table_class="w-full" id="submissions" rows={Enum.with_index(@top_scores, 1)}>
       <:col :let={{score_record, index}} label="Rank">
