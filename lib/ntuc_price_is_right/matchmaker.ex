@@ -1,5 +1,6 @@
 defmodule NtucPriceIsRight.Matchmaker do
   use GenServer
+  alias NtucPriceIsRight.Products
   alias Phoenix.PubSub
   @pubsub NtucPriceIsRight.PubSub
 
@@ -36,6 +37,8 @@ defmodule NtucPriceIsRight.Matchmaker do
     game_id = UUID.uuid4()
     players = [pid1, pid2]
 
+    products = Products.get_random_products()
+
     Enum.each(players, fn pid ->
       opponent_pid =
         case pid do
@@ -43,7 +46,7 @@ defmodule NtucPriceIsRight.Matchmaker do
           ^pid2 -> pid1
         end
 
-      send(pid, {:matched, %{game_id: game_id, opponent_pid: opponent_pid}})
+      send(pid, {:matched, %{game_id: game_id, opponent_pid: opponent_pid, products: products}})
     end)
 
     new_state = %{

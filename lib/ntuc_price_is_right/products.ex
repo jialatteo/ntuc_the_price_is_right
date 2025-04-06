@@ -25,6 +25,10 @@ defmodule NtucPriceIsRight.Products do
     Repo.one(from p in Product, order_by: fragment("RANDOM()"), limit: 1)
   end
 
+  def get_random_products do
+    Repo.all(from p in Product, order_by: fragment("RANDOM()"), limit: 100)
+  end
+
   @doc """
   Gets a single product.
 

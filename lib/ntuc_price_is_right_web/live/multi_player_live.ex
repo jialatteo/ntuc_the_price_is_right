@@ -25,7 +25,7 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
   end
 
   def mount(_params, _session, socket) do
-    product = if connected?(socket), do: Products.get_random_product(), else: nil
+    # product = if connected?(socket), do: Products.get_random_product(), else: nil
     guessed_price_form = to_form(GuessedPrice.changeset(%GuessedPrice{}, %{}))
 
     if connected?(socket) do
@@ -41,7 +41,8 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
      |> assign(:score, 0)
      |> assign(:is_game_in_progress, true)
      |> assign(:correct_streak, 0)
-     |> assign(:product, product)
+     |> assign(:products, nil)
+     |> assign(:current_product_index, 0)
      |> stream(:submissions, [])
      |> assign(:guessed_price_form, guessed_price_form)}
   end
@@ -92,17 +93,25 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
         />
       </div>
       
-      <div :if={@product && @is_game_in_progress} class="border rounded-lg p-4">
+      <div :if={@products && @is_game_in_progress} class="border rounded-lg p-4">
         <div class="flex flex-col items-center">
-          <img class="size-80" src={@product.image} alt={@product.title} />
+          <img
+            class="size-80"
+            src={Enum.at(@products, @current_product_index).image}
+            alt={Enum.at(@products, @current_product_index).title}
+          />
         </div>
         
         <div class="flex flex-col gap-2">
-          <p class="font-bold text-3xl">${:erlang.float_to_binary(@product.price, decimals: 2)}</p>
+          <p class="font-bold text-3xl">
+            ${:erlang.float_to_binary(Enum.at(@products, @current_product_index).price, decimals: 2)}
+          </p>
           
-          <p class="text-2xl">{@product.title}</p>
+          <p class="text-2xl">{Enum.at(@products, @current_product_index).title}</p>
           
-          <p class="text-xl font-medium text-gray-500">{@product.quantity}</p>
+          <p class="text-xl font-medium text-gray-500">
+            {Enum.at(@products, @current_product_index).quantity}
+          </p>
         </div>
       </div>
       
@@ -253,8 +262,9 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
     changeset = GuessedPrice.changeset(%GuessedPrice{}, %{"price" => price})
 
     if changeset.valid? do
+      product = Enum.at(socket.assigns.products, socket.assigns.current_product_index)
       guessed_price = price |> format_guessed_price() |> String.to_float()
-      actual_price = socket.assigns.product.price
+      actual_price = product.price
 
       is_correct_guess =
         0.8 * actual_price <= guessed_price and guessed_price <= 1.2 * actual_price
@@ -268,9 +278,9 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
 
       submission = %Submission{
         id: Ecto.UUID.generate(),
-        image: socket.assigns.product.image,
-        product_name: socket.assigns.product.title,
-        quantity: socket.assigns.product.quantity,
+        image: product.image,
+        product_name: product.title,
+        quantity: product.quantity,
         actual_price: :erlang.float_to_binary(actual_price, decimals: 2),
         guessed_price: format_guessed_price(price)
       }
@@ -279,6 +289,13 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
         if is_correct_guess,
           do: push_event(socket, "animate_score", %{}),
           else: socket
+
+      next_product_index =
+        if socket.assigns.current_product_index + 1 >= length(socket.assigns.products) do
+          0
+        else
+          socket.assigns.current_product_index + 1
+        end
 
       Phoenix.PubSub.broadcast(
         NtucPriceIsRight.PubSub,
@@ -293,7 +310,7 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
        |> assign(:is_correct_guess, is_correct_guess)
        |> assign(:correct_streak, correct_streak)
        |> assign(:score, score)
-       |> assign(:product, Products.get_random_product())}
+       |> assign(:current_product_index, next_product_index)}
     else
       {:noreply,
        assign(socket, :guessed_price_form, to_form(changeset |> Map.put(:action, :submit)))}
@@ -328,7 +345,10 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
      |> assign(:is_game_in_progress, false)}
   end
 
-  def handle_info({:matched, %{game_id: game_id, opponent_pid: opponent_pid}}, socket) do
+  def handle_info(
+        {:matched, %{game_id: game_id, opponent_pid: opponent_pid, products: products}},
+        socket
+      ) do
     Phoenix.PubSub.subscribe(
       NtucPriceIsRight.PubSub,
       self() |> :erlang.pid_to_list() |> to_string()
@@ -337,6 +357,7 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
     {:noreply,
      socket
      |> assign(:opponent_pid, opponent_pid)
+     |> assign(:products, products)
      |> assign(:game_id, game_id)}
   end
 
