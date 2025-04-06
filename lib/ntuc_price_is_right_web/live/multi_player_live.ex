@@ -96,6 +96,15 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
       <div :if={@products && @is_game_in_progress} class="border rounded-lg p-4">
         <div class="flex flex-col items-center">
           <img
+            class="hidden size-80"
+            src={
+              Enum.at(
+                @products,
+                rem(@current_product_index + 1, length(@products))
+              ).image
+            }
+          />
+          <img
             class="size-80"
             src={Enum.at(@products, @current_product_index).image}
             alt={Enum.at(@products, @current_product_index).title}
