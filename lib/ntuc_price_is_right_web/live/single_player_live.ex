@@ -1,7 +1,9 @@
 defmodule NtucPriceIsRightWeb.SinglePlayerLive do
   use NtucPriceIsRightWeb, :live_view
   alias NtucPriceIsRight.Products
+  alias NtucPriceIsRight.TopScores
   alias NtucPriceIsRight.GuessedPrice
+  alias NtucPriceIsRight.TopScores.TopScore
 
   defmodule Submission do
     defstruct [
@@ -26,15 +28,18 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
   def mount(_params, _session, socket) do
     products = if connected?(socket), do: Products.get_random_products(), else: nil
     guessed_price_form = to_form(GuessedPrice.changeset(%GuessedPrice{}, %{}))
+    top_score_form = to_form(TopScore.changeset(%TopScore{}, %{}))
 
     {:ok,
      socket
      |> assign(:score, 0)
      |> assign(:is_game_in_progress, true)
+     |> assign(:is_in_leaderboard, false)
      |> assign(:correct_streak, 0)
      |> assign(:products, products)
      |> assign(:current_product_index, 0)
      |> stream(:submissions, [])
+     |> assign(:top_score_form, top_score_form)
      |> assign(:guessed_price_form, guessed_price_form)}
   end
 
@@ -150,7 +155,28 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
       </div>
       
       <div :if={!@is_game_in_progress} class="flex text-2xl flex-col items-center font-bold mt-10">
-        <p>Great job!</p>
+        <div :if={@is_in_leaderboard} class="mt-8">
+          <p class="font-bold mb-5">You made the top 10!</p>
+          
+          <p class="font-semibold mb-2 text-center">Enter your name</p>
+          
+          <.form phx-submit="update_top_score_user" for={@top_score_form}>
+            <.input
+              input_class="disabled:bg-gray-200 font-semibold disabled:opacity-50"
+              disabled={@top_score_form.source.action == :submitted}
+              autocomplete="off"
+              field={@top_score_form[:user]}
+            />
+            <button
+              disabled={@top_score_form.source.action == :submitted}
+              class="text-white disabled:opacity-50 disabled:bg-gray-300 hover:bg-gray-400 mt-4 mb-8 rounded-lg py-2 bg-black w-full"
+            >
+              Submit
+            </button>
+          </.form>
+        </div>
+        
+        <p :if={!@is_in_leaderboard}>Great job!</p>
          <img src="/images/smiling_emoji.png" class="size-28" alt="Win Image" />
       </div>
     </div>
@@ -267,7 +293,48 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
   end
 
   def handle_event("countdown_completed", _params, socket) do
-    {:noreply, assign(socket, :is_game_in_progress, false)}
+    if TopScores.qualifies_for_top_score?(socket.assigns.score) do
+      TopScores.insert_top_score!(%{
+        "user" => "user" <> format_pid_as_string(self()),
+        "score" => socket.assigns.score
+      })
+
+      {:noreply,
+       socket
+       |> assign(:is_in_leaderboard, true)
+       |> assign(:is_game_in_progress, false)}
+    else
+      {:noreply,
+       socket
+       |> assign(:is_game_in_progress, false)}
+    end
+  end
+
+  def handle_event("update_top_score_user", %{"top_score" => %{"user" => user}}, socket) do
+    current_score = socket.assigns.score
+    changeset = TopScore.changeset(%TopScore{score: current_score}, %{"user" => user})
+
+    if changeset.valid? do
+      case TopScores.rename_user(format_pid_as_string(self()), user) do
+        {:error, :not_found} ->
+          IO.puts("Top score not found")
+          {:noreply, socket}
+
+        {:ok, _top_score} ->
+          top_score_form =
+            changeset
+            |> Map.put(:action, :submitted)
+            |> to_form()
+
+          {:noreply,
+           socket
+           |> assign(:is_game_in_progress, false)
+           |> assign(:top_score_form, top_score_form)}
+      end
+    else
+      {:noreply,
+       socket |> assign(:top_score_form, to_form(changeset |> Map.put(:action, :validate)))}
+    end
   end
 
   defp format_guessed_price(price) do
@@ -288,5 +355,9 @@ defmodule NtucPriceIsRightWeb.SinglePlayerLive do
       _ ->
         ""
     end
+  end
+
+  defp format_pid_as_string(pid) when is_pid(pid) do
+    :erlang.pid_to_list(pid) |> to_string()
   end
 end

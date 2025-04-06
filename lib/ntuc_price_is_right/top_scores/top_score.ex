@@ -14,5 +14,6 @@ defmodule NtucPriceIsRight.TopScores.TopScore do
     top_score
     |> cast(attrs, [:user, :score])
     |> validate_required([:user, :score])
+    |> validate_length(:user, max: 20)
   end
 end
