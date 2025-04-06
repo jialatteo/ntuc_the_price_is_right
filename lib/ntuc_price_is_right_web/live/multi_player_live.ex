@@ -388,7 +388,6 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
   def handle_event("update_top_score_user", %{"top_score" => %{"user" => user}}, socket) do
     current_score = socket.assigns.score
     changeset = TopScore.changeset(%TopScore{score: current_score}, %{"user" => user})
-    IO.inspect(changeset, label: "changeset before rename")
 
     if changeset.valid? do
       case TopScores.rename_user("user" <> format_pid_as_string(self()), user) do
