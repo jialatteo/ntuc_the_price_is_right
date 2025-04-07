@@ -1,6 +1,6 @@
 # **The Price Is Right Game**
 
-This is a real-time pricing game built using **Phoenix LiveView**, which is built on top of the **Elixir** programming language. The application uses **SQLite** for data storage and **Tailwind CSS** for styling.
+This is a pricing game built using **Phoenix LiveView**, which is built on top of the **Elixir** programming language. The application uses **SQLite** for data storage and **Tailwind CSS** for styling. Data is scraped from [NTUC Fairprice](https://www.fairprice.com.sg) using **Crawly** and **Puppeteer**.
 
 # **[Click here to visit the live demo](https://ntuc-price-is-right.fly.dev/)**
 
