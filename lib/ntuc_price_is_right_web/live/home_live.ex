@@ -58,7 +58,7 @@ defmodule NtucPriceIsRightWeb.HomeLive do
       </div>
       
     <!-- Product Info -->
-      <div class="text-center text-sm text-gray-600 mb-6">
+      <div class="text-center text-sm text-gray-600 mb-2">
         <p>
           Products were scraped as of 27 March 2025 from
           <a
@@ -67,6 +67,20 @@ defmodule NtucPriceIsRightWeb.HomeLive do
             target="_blank"
           >
             fairprice.com.sg
+          </a>
+        </p>
+      </div>
+      
+    <!-- Repository Link -->
+      <div class="text-center">
+        <p class="text-sm text-gray-600">
+          View source code
+          <a
+            class="text-blue-500 hover:text-blue-300 hover:underline"
+            href="https://github.com/jialatteo/ntuc_the_price_is_right"
+            target="_blank"
+          >
+            here
           </a>
         </p>
       </div>
