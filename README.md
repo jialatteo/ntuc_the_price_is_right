@@ -1,18 +1,47 @@
-# NtucPriceIsRight
+# **The Price Is Right Game**
 
-To start your Phoenix server:
+This is a real-time pricing game built using **Phoenix LiveView**, which is built on top of the **Elixir** programming language. The application uses **SQLite** for data storage and **Tailwind CSS** for styling.
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+# **[Click here to visit the live demo](https://ntuc-price-is-right.fly.dev/)**
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+## Features
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+- **Real-time gameplay** using Phoenix's built-in PubSub library.
+- **Matchmaking for multi-player mode** using Elixir's GenServer and each user's LiveView process PID.
+- **Leaderboard** to track the highest scores.
+- **Responsive design** using Tailwind CSS.
 
-## Learn more
+![Game Screenshot](./priv/static/images/screenshot.png)
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+## Run Locally
+
+To set up the application locally:
+
+1. **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/jialatteo/ntuc_the_price_is_right.git
+    cd ntuc_the_price_is_right
+    mix setup
+    ```
+
+2. **Set up the database:**
+
+    Make sure you have PostgreSQL installed. Then run the following commands to create and migrate the database:
+
+    ```bash
+    mix ecto.create
+    mix ecto.migrate
+    ```
+
+3. **Start the Phoenix server:**
+
+    ```bash
+    mix phx.server
+    ```
+
+    The app will be available at `http://localhost:4000`.
+
+## Deployment
+
+This application is deployed using **Fly.io**. The database and application are configured to run seamlessly in the cloud. You can view the live app [here](https://ntuc-price-is-right.fly.dev/).
