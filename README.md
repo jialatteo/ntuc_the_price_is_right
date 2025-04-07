@@ -42,6 +42,3 @@ To set up the application locally:
 
     The app will be available at `http://localhost:4000`.
 
-## Deployment
-
-This application is deployed using **Fly.io**. The database and application are configured to run seamlessly in the cloud. You can view the live app [here](https://ntuc-price-is-right.fly.dev/).
