@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+cd -P -- "$(dirname -- "$0")"
+exec ./ntuc_price_is_right eval NtucPriceIsRight.Release.migrate
