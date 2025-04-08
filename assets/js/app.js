@@ -21,6 +21,17 @@ Hooks.GuessedPrice = {
     this.el.addEventListener("input", (event) => {
       let value = event.target.value;
       let validValue = value.match(/^\d+(\.\d{0,2})?/)?.[0] || "";
+
+      // Strip unnecessary leading zeros unless it's just "0" or starts with "0."
+      if (
+        validValue.startsWith("0") &&
+        !validValue.startsWith("0.") &&
+        validValue.length > 1
+      ) {
+        validValue = validValue.replace(/^0+/, "");
+        if (validValue === "") validValue = "0";
+      }
+
       if (value !== validValue) {
         event.target.value = validValue;
       }

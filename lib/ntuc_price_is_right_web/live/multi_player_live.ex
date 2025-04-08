@@ -141,6 +141,7 @@ defmodule NtucPriceIsRightWeb.MultiPlayerLive do
         
         <div class="flex w-full items-start">
           <.input
+            type="number"
             placeholder="Guess the price (e.g $1.23)"
             class="flex-1"
             phx-debounce="300"
